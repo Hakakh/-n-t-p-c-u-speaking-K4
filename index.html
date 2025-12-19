@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gấu Nhỏ Học Nói - 100+ Mẫu Câu Tiếng Anh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+        @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+        .animate-blink { animation: blink 4s infinite; transform-origin: 70px 80px; }
+        .animate-blink-right { animation: blink 4s infinite; transform-origin: 130px 80px; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes mouthTalkWide { 0% { transform: scale(1, 0.2); } 50% { transform: scale(1.5, 2.5); } 100% { transform: scale(1, 0.2); } }
+        .mouth-talking { animation: mouthTalkWide 0.25s infinite; transform-origin: 100px 135px; }
+        .active-scale:active { transform: scale(0.95); }
+        .btn-pulse { position: relative; z-index: 1; }
+        .btn-pulse::before { content: ''; position: absolute; inset: -4px; background: rgba(99, 102, 241, 0.4); border-radius: 9999px; animation: pulse 1.5s cubic-bezier(0,0,0.2,1) infinite; z-index: -1; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-indigo-50/50 font-sans text-slate-800">
+    <div id="root"></div>
+
+    <script type="module">
+        import { h, render } from 'https://esm.sh/preact';
+        import { useState, useEffect, useCallback, useMemo } from 'https://esm.sh/preact/hooks';
+        import htm from 'https://esm.sh/htm';
+
+        const html = htm.bind(h);
+
+        const RAW_DATA = {
+            "1. Chào Hỏi": [
+                { en: "Hello! / Hi!", vi: "Xin chào!", emoji: "👋" },
+                { en: "Good morning!", vi: "Chào buổi sáng!", emoji: "☀️" },
+                { en: "Good afternoon!", vi: "Chào buổi chiều!", emoji: "🌤️" },
+                { en: "Good evening!", vi: "Chào buổi tối!", emoji: "🌙" },
+                { en: "Goodbye!", vi: "Tạm biệt!", emoji: "🏃" },
+                { en: "It’s nice to see you.", vi: "Rất vui được gặp con.", emoji: "😊" },
+                { en: "Nice to meet you again.", vi: "Rất vui được gặp lại con.", emoji: "🤝" }
+            ],
+            "2. Cảm Ơn & Xin Lỗi": [
+                { en: "I’m sorry!", vi: "Mẹ/con xin lỗi!", emoji: "🙏" },
+                { en: "Sorry, I didn’t mean to do that!", vi: "Xin lỗi, mẹ/con không cố ý làm thế.", emoji: "🥺" },
+                { en: "Thank you!", vi: "Cảm ơn con/mẹ!", emoji: "❤️" },
+                { en: "Thank you so much!", vi: "Cảm ơn mẹ/con rất nhiều!", emoji: "💖" },
+                { en: "Thank you very much!", vi: "Cảm ơn mẹ/con rất nhiều!", emoji: "🌟" }
+            ],
+            "3. Thăm Hỏi Thông Dụng": [
+                { en: "What’s your name?", vi: "Tên bạn/con là gì?", emoji: "📛" },
+                { en: "What’s his name?", vi: "Tên của bạn nam ấy là gì?", emoji: "👦" },
+                { en: "What’s her name?", vi: "Tên của bạn nữ ấy là gì?", emoji: "👧" },
+                { en: "How old are you?", vi: "Bạn/con bao nhiêu tuổi?", emoji: "🎂" },
+                { en: "How old is he?", vi: "Cậu ấy bao nhiêu tuổi?", emoji: "🔢" },
+                { en: "How old is she?", vi: "Cô ấy bao nhiêu tuổi?", emoji: "👧" },
+                { en: "How are you?", vi: "Bạn/con có khỏe không?", emoji: "❓" },
+                { en: "How was your day?", vi: "Ngày hôm nay của bạn/con thế nào?", emoji: "🌆" },
+                { en: "Are you hungry?", vi: "Bạn/con có đói không?", emoji: "😋" },
+                { en: "Are you tired?", vi: "Bạn/con có mệt không?", emoji: "😴" },
+                { en: "Are you happy?", vi: "Bạn/con có vui không?", emoji: "😄" },
+                { en: "Are you sad?", vi: "Bạn/con có buồn không?", emoji: "😢" },
+                { en: "Are you scared?", vi: "Bạn/con có sợ không?", emoji: "😨" },
+                { en: "Are you OK?", vi: "Bạn/con có ổn không?", emoji: "👌" },
+                { en: "Are you thirsty?", vi: "Bạn/con có khát nước không?", emoji: "🥤" }
+            ],
+            "4. Sở Thích & Câu Trả Lời": [
+                { en: "What present do you want for your birthday?", vi: "Con muốn quà gì vào sinh nhật?", emoji: "🎁" },
+                { en: "I want a toy / I want a doll.", vi: "Con muốn đồ chơi / búp bê. (Gợi ý)", emoji: "🧸" },
+                { en: "I want a car / I want a robot.", vi: "Con muốn ô tô / robot. (Gợi ý)", emoji: "🤖" },
+                { en: "Would you like to play any sports?", vi: "Con muốn chơi thể thao không?", emoji: "⚽" },
+                { en: "Yes, I like football / basketball.", vi: "Vâng, con thích bóng đá / bóng rổ. (Gợi ý)", emoji: "🏀" },
+                { en: "What is your favorite holiday?", vi: "Kỳ nghỉ yêu thích của con là khi nào?", emoji: "🏖️" },
+                { en: "I like summer / Tet holiday.", vi: "Con thích mùa hè / Tết. (Gợi ý)", emoji: "🧧" },
+                { en: "Who is the best superhero?", vi: "Ai là anh hùng tuyệt nhất?", emoji: "🦸" },
+                { en: "Spider-Man / Batman is the best.", vi: "Người Nhện / Người Dơi là nhất. (Gợi ý)", emoji: "🕸️" },
+                { en: "What are your favorite colors?", vi: "Con thích những màu sắc nào?", emoji: "🎨" },
+                { en: "I like red and blue.", vi: "Con thích màu đỏ và xanh. (Gợi ý)", emoji: "🔴" },
+                { en: "Which animal do you like best?", vi: "Con thích con vật nào nhất?", emoji: "🦁" },
+                { en: "I like dogs and rabbits.", vi: "Con thích chó và thỏ. (Gợi ý)", emoji: "🐰" },
+                { en: "What do you like to eat?", vi: "Con thích ăn món gì?", emoji: "🍜" },
+                { en: "I like chicken and noodles.", vi: "Con thích thịt gà và mì. (Gợi ý)", emoji: "🍗" },
+                { en: "Do you like eating ice cream?", vi: "Con có thích ăn kem không?", emoji: "🍦" },
+                { en: "Yes, it is delicious!", vi: "Vâng, nó ngon lắm! (Gợi ý)", emoji: "😋" }
+            ],
+            "5. Cơ Thể": [
+                { en: "Is this a nose?", vi: "Đây là mũi phải không?", emoji: "👃" },
+                { en: "Is this a mouth?", vi: "Đây là miệng phải không?", emoji: "👄" },
+                { en: "Where is your face?", vi: "Mặt của con đâu?", emoji: "😊" },
+                { en: "Where are your eyes?", vi: "Mắt của con đâu?", emoji: "👀" },
+                { en: "Where are your ears?", vi: "Tai của con đâu?", emoji: "👂" },
+                { en: "Is this your head?", vi: "Đây là đầu phải không?", emoji: "👶" }
+            ],
+            "6. Yêu Cầu & Chỉ Dẫn": [
+                { en: "Be careful!", vi: "Hãy cẩn thận!", emoji: "⚠️" },
+                { en: "Slow down!", vi: "Hãy chậm lại!", emoji: "🐢" },
+                { en: "Eat slowly!", vi: "Ăn chậm thôi con!", emoji: "🍽️" },
+                { en: "Time to get up!", vi: "Đến giờ dậy rồi!", emoji: "⏰" },
+                { en: "Don’t touch it!", vi: "Đừng động vào đó!", emoji: "🚫" },
+                { en: "Keep quiet please!", vi: "Hãy giữ yên lặng nào!", emoji: "🤫" },
+                { en: "Wait a minute.", vi: "Chờ một chút.", emoji: "⏳" },
+                { en: "Go get your shoes!", vi: "Con đi lấy giày đi!", emoji: "👟" }
+            ],
+            "7. Đề Nghị": [
+                { en: "Let’s go to the kitchen!", vi: "Mình vào bếp đi con!", emoji: "🍳" },
+                { en: "Let’s play together!", vi: "Hãy cùng chơi nào!", emoji: "🎠" },
+                { en: "Let mommy help you!", vi: "Để mẹ giúp con nhé!", emoji: "🤱" },
+                { en: "Can I play with you?", vi: "Mẹ chơi với con nhé?", emoji: "🎲" }
+            ],
+            "8. Động Viên": [
+                { en: "Don’t worry! Mommy is here!", vi: "Đừng lo. Mẹ ở đây!", emoji: "🛡️" },
+                { en: "You can do it!", vi: "Con có thể làm được!", emoji: "💪" },
+                { en: "Good job!", vi: "Con làm tốt lắm!", emoji: "🌟" },
+                { en: "I’m so proud of you!", vi: "Mẹ rất tự hào về con!", emoji: "💖" }
+            ],
+            "9. Luyện Tập Hỏi Đáp (K4)": [
+                { en: "Where are you from?", vi: "Bạn từ đâu đến?", emoji: "🌍" },
+                { en: "I’m from Vietnam.", vi: "→ Mình đến từ Việt Nam.", emoji: "🇻🇳" },
+                { en: "How many playgrounds are there at your school?", vi: "Trường bạn có bao nhiêu sân chơi?", emoji: "🏫" },
+                { en: "There is one playground at my school.", vi: "→ Trường mình có một sân chơi.", emoji: "🏃" },
+                { en: "How many buildings are there at your school?", vi: "Trường bạn có bao nhiêu tòa nhà?", emoji: "🏢" },
+                { en: "There are three buildings at my school.", vi: "→ Trường mình có ba tòa nhà.", emoji: "🧱" },
+                { en: "What day is it today?", vi: "Hôm nay là thứ mấy?", emoji: "📅" },
+                { en: "It’s Monday.", vi: "→ Hôm nay là thứ Hai.", emoji: "🗓️" },
+                { en: "What do you do on Mondays?", vi: "Bạn làm gì vào các ngày thứ Hai?", emoji: "🎒" },
+                { en: "I have English on Mondays.", vi: "→ Mình có môn Tiếng Anh vào thứ Hai.", emoji: "🔤" },
+                { en: "What do you do on Tuesdays?", vi: "Bạn làm gì vào các ngày thứ Ba?", emoji: "📐" },
+                { en: "I study Maths on Tuesdays.", vi: "→ Mình học môn Toán vào thứ Ba.", emoji: "🔢" },
+                { en: "Can you swim?", vi: "Bạn có biết bơi không?", emoji: "🏊" },
+                { en: "Yes, I can.", vi: "→ Vâng, mình biết bơi.", emoji: "🌊" },
+                { en: "Can you play football?", vi: "Bạn có biết đá bóng không?", emoji: "⚽" },
+                { en: "Yes, I can play football.", vi: "→ Vâng, mình có thể đá bóng.", emoji: "🥅" },
+                { en: "Can you ride a bike?", vi: "Bạn có biết đi xe đạp không?", emoji: "🚲" },
+                { en: "No, I can’t.", vi: "→ Không, mình không biết.", emoji: "🚫" },
+                { en: "Where’s your school?", vi: "Trường của bạn ở đâu?", emoji: "📍" },
+                { en: "It’s in An Khê Ward.", vi: "→ Trường ở phường An Khê.", emoji: "🏘️" },
+                { en: "Why do you like English?", vi: "Tại sao bạn thích Tiếng Anh?", emoji: "❤️" },
+                { en: "Because it’s interesting.", vi: "→ Bởi vì nó thú vị.", emoji: "✨" },
+                { en: "Why do you like Maths?", vi: "Tại sao bạn thích môn Toán?", emoji: "➕" },
+                { en: "Because it’s fun.", vi: "→ Bởi vì nó vui.", emoji: "😁" },
+                { en: "What subjects do you have today?", vi: "Hôm nay bạn có những môn học gì?", emoji: "📚" },
+                { en: "I have English and Maths.", vi: "→ Mình có môn Tiếng Anh và môn Toán.", emoji: "🎒" },
+                { en: "What’s your favourite subject?", vi: "Môn học yêu thích của bạn là gì?", emoji: "🌟" },
+                { en: "My favourite subject is Science.", vi: "→ Môn học yêu thích của mình là Khoa học.", emoji: "🧪" },
+                { en: "What time do you get up?", vi: "Bạn thức dậy lúc mấy giờ?", emoji: "⏰" },
+                { en: "I get up at six o’clock.", vi: "→ Mình thức dậy lúc 6 giờ đúng.", emoji: "☀️" },
+                { en: "What time do you have breakfast?", vi: "Bạn ăn sáng lúc mấy giờ?", emoji: "🥣" },
+                { en: "I have breakfast at six thirty.", vi: "→ Mình ăn sáng lúc 6 giờ 30.", emoji: "🍳" },
+                { en: "When do you have Art?", vi: "Khi nào bạn có môn Mỹ thuật?", emoji: "🎨" },
+                { en: "I have it on Monday.", vi: "→ Mình có môn đó vào thứ Hai.", emoji: "🖌️" },
+                { en: "When do you have Science?", vi: "Khi nào bạn có môn Khoa học?", emoji: "🔬" },
+                { en: "I have it on Friday.", vi: "→ Mình có môn đó vào thứ Sáu.", emoji: "📅" },
+                { en: "What do you want to eat?", vi: "Bạn muốn ăn gì?", emoji: "🍽️" },
+                { en: "I want rice.", vi: "→ Mình muốn ăn cơm.", emoji: "🍚" },
+                { en: "What do you want to drink?", vi: "Bạn muốn uống gì?", emoji: "🥛" },
+                { en: "I want milk.", vi: "→ Mình muốn uống sữa.", emoji: "🍼" },
+                { en: "When’s your birthday?", vi: "Khi nào là sinh nhật của bạn?", emoji: "🎂" },
+                { en: "It’s in June.", vi: "→ Vào tháng Sáu.", emoji: "🎈" },
+                { en: "When’s your sports day?", vi: "Khi nào là ngày hội thể thao của bạn?", emoji: "🏃" },
+                { en: "It’s in March.", vi: "→ Vào tháng Ba.", emoji: "🏅" },
+                { en: "Is your sports day in March?", vi: "Ngày hội thể thao vào tháng Ba phải không?", emoji: "❓" },
+                { en: "Yes, it is.", vi: "→ Đúng vậy.", emoji: "✅" },
+                { en: "Is your sports day in April?", vi: "Ngày hội thể thao vào tháng Tư phải không?", emoji: "❓" },
+                { en: "No, it isn’t.", vi: "→ Không, không phải.", emoji: "❌" }
+            ],
+            "10. Cảm Xúc & Thói Quen": [
+                { en: "How do you feel about this?", vi: "Con cảm thấy thế nào về điều này?", emoji: "💓" },
+                { en: "What did you learn today?", vi: "Hôm nay con đã học được gì?", emoji: "🏫" },
+                { en: "Wash your hands, please!", vi: "Con hãy rửa tay đi nhé!", emoji: "🧼" },
+                { en: "Look at the sky!", vi: "Hãy nhìn lên bầu trời kìa!", emoji: "☁️" },
+                { en: "You are so brave!", vi: "Con thật dũng cảm!", emoji: "🦸" }
+            ]
+        };
+
+        const TOPICS_DATA = Object.entries(RAW_DATA).map(([title, pairs]) => ({
+            title,
+            pairs: pairs.map(p => ({ english: p.en, vietnamese: p.vi, emoji: p.emoji }))
+        }));
+
+        const AppState = { SELECT_TOPIC: 'SELECT_TOPIC', PLAY_GAME: 'PLAY_GAME' };
+        const GameState = { READ: 'READ', TRANSLATE: 'TRANSLATE', REVEAL: 'REVEAL', COMPLETE: 'COMPLETE' };
+
+        const CuteCharacter = ({ isSpeaking }) => html`
+            <div class="relative w-28 h-28 md:w-36 md:h-36 mx-auto animate-float">
+                <svg viewBox="0 0 200 200" class="w-full h-full">
+                    <circle cx="100" cy="100" r="80" fill="#FFB347" />
+                    <circle cx="50" cy="40" r="25" fill="#FFB347" />
+                    <circle cx="150" cy="40" r="25" fill="#FFB347" />
+                    <circle cx="50" cy="40" r="15" fill="#FFCC80" />
+                    <circle cx="150" cy="40" r="15" fill="#FFCC80" />
+                    <g class="animate-blink">
+                        <circle cx="70" cy="80" r="10" fill="black" />
+                        <circle cx="75" cy="75" r="3" fill="white" />
+                    </g>
+                    <g class="animate-blink-right">
+                        <circle cx="130" cy="80" r="10" fill="black" />
+                        <circle cx="135" cy="75" r="3" fill="white" />
+                    </g>
+                    <ellipse cx="100" cy="120" rx="30" ry="20" fill="#FFCC80" />
+                    <path d="M90 110 Q100 120 110 110" fill="none" stroke="black" stroke-width="3" />
+                    <ellipse cx="100" cy="135" rx="18" ry="5" fill="black" class=${isSpeaking ? "mouth-talking" : ""} />
+                </svg>
+            </div>
+        `;
+
+        const App = () => {
+            const [appState, setAppState] = useState(AppState.SELECT_TOPIC);
+            const [sentences, setSentences] = useState([]);
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [gameState, setGameState] = useState(GameState.READ);
+            const [isSpeaking, setIsSpeaking] = useState(false);
+
+            const handleSpeak = useCallback((text) => {
+                if (!('speechSynthesis' in window)) return;
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.75;
+                utterance.onstart = () => setIsSpeaking(true);
+                utterance.onend = () => setIsSpeaking(false);
+                window.speechSynthesis.speak(utterance);
+            }, []);
+
+            useEffect(() => {
+                if (appState === AppState.PLAY_GAME && (gameState === GameState.READ || gameState === GameState.REVEAL)) {
+                    const timer = setTimeout(() => handleSpeak(sentences[currentIndex].english), 500);
+                    return () => clearTimeout(timer);
+                }
+            }, [currentIndex, gameState, appState, sentences, handleSpeak]);
+
+            const handleTopicSelect = (topic) => {
+                setSentences(topic.pairs);
+                setCurrentIndex(0);
+                setGameState(GameState.READ);
+                setAppState(AppState.PLAY_GAME);
+            };
+
+            const handleNext = () => {
+                if (gameState === GameState.READ) setGameState(GameState.TRANSLATE);
+                else if (gameState === GameState.TRANSLATE) setGameState(GameState.REVEAL);
+                else if (gameState === GameState.REVEAL) {
+                    if (currentIndex < sentences.length - 1) {
+                        setCurrentIndex(c => c + 1);
+                        setGameState(GameState.READ);
+                    } else setGameState(GameState.COMPLETE);
+                }
+            };
+
+            if (appState === AppState.SELECT_TOPIC) {
+                return html`
+                    <div class="max-w-4xl mx-auto p-4 md:p-8 animate-fade-in">
+                        <header class="text-center mb-8">
+                            <h1 class="text-3xl md:text-5xl font-black text-indigo-600 mb-2 drop-shadow-sm">Gấu Nhỏ Học Nói 🐻</h1>
+                            <p class="text-slate-500 font-medium italic">Bé tập đọc 100+ mẫu câu giao tiếp tiếng Anh!</p>
+                        </header>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-10">
+                            ${TOPICS_DATA.map(topic => html`
+                                <button key=${topic.title} onClick=${() => handleTopicSelect(topic)} 
+                                    class="flex items-center gap-4 bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition-all active-scale group border-2 border-transparent hover:border-indigo-100 text-left">
+                                    <span class="text-4xl group-hover:scale-110 transition-transform">${topic.pairs[0].emoji}</span>
+                                    <div class="flex flex-col">
+                                        <span class="text-base font-bold text-slate-700 leading-tight">${topic.title}</span>
+                                        <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">${topic.pairs.length} Câu</span>
+                                    </div>
+                                </button>
+                            `)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const current = sentences[currentIndex];
+            const progress = ((currentIndex + 1) / sentences.length) * 100;
+
+            return html`
+                <div class="max-w-lg mx-auto p-4 flex flex-col min-h-screen animate-fade-in">
+                    <div class="flex items-center justify-between mb-3">
+                        <button onClick=${() => setAppState(AppState.SELECT_TOPIC)} class="text-indigo-600 font-bold p-2 active-scale text-sm">← Quay lại</button>
+                        <span class="bg-white px-3 py-1 rounded-full text-[11px] font-black shadow-sm text-slate-500">${currentIndex + 1} / ${sentences.length}</span>
+                    </div>
+
+                    <div class="h-2 bg-slate-200 rounded-full mb-4 overflow-hidden">
+                        <div class="h-full bg-indigo-500 transition-all duration-300" style="width: ${progress}%"></div>
+                    </div>
+
+                    <div class="bg-white rounded-[2.5rem] shadow-xl p-8 flex-grow flex flex-col items-center justify-center text-center relative overflow-hidden border-4 border-indigo-50">
+                        ${gameState === GameState.COMPLETE ? html`
+                            <div class="animate-fade-in">
+                                <div class="text-7xl mb-6">🏆</div>
+                                <h2 class="text-3xl font-black text-indigo-600 mb-2">Con Giỏi Quá!</h2>
+                                <p class="text-slate-500 mb-8 font-medium">Con đã hoàn thành toàn bộ bài học này.</p>
+                                <button onClick=${() => setAppState(AppState.SELECT_TOPIC)} class="bg-indigo-500 text-white px-10 py-4 rounded-2xl font-black shadow-lg active-scale hover:bg-indigo-600 transition-colors">Học Bài Mới Thôi!</button>
+                            </div>
+                        ` : html`
+                            <div class="w-full flex flex-col items-center">
+                                <${CuteCharacter} isSpeaking=${isSpeaking} />
+                                
+                                <div class="mt-8 min-h-[160px] flex flex-col items-center justify-center w-full">
+                                    ${gameState === GameState.READ || gameState === GameState.REVEAL ? html`
+                                        <div class="animate-fade-in w-full">
+                                            <p class="text-[10px] font-black uppercase tracking-widest mb-3 ${gameState === GameState.READ ? 'text-indigo-400' : 'text-green-500'}">
+                                                ${gameState === GameState.READ ? "Nghe và đọc theo Gấu nhé:" : "Đáp án đúng nè:"}
+                                            </p>
+                                            <h2 class="text-2xl md:text-3xl font-black mb-4 leading-tight text-slate-800 break-words">${current.english}</h2>
+                                            <p class="text-lg text-slate-400 font-medium italic mb-6">${current.vietnamese}</p>
+                                            
+                                            <button onClick=${() => handleSpeak(current.english)} 
+                                                class="relative w-16 h-16 rounded-full bg-indigo-500 text-white shadow-lg active-scale flex items-center justify-center transition-all ${isSpeaking ? 'btn-pulse bg-indigo-600' : ''}">
+                                                <span class="text-3xl">${isSpeaking ? '🎙️' : '🔊'}</span>
+                                            </button>
+                                        </div>
+                                    ` : html`
+                                        <div class="animate-fade-in w-full px-4">
+                                            <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-3">Câu này nói tiếng Anh thế nào?</p>
+                                            <h2 class="text-2xl font-black text-slate-700 leading-tight">${current.vietnamese}</h2>
+                                            <div class="text-6xl mt-8 opacity-30 animate-bounce">❓</div>
+                                        </div>
+                                    `}
+                                </div>
+                            </div>
+                        `}
+                        <div class="absolute top-6 right-6 text-4xl opacity-80">${current?.emoji}</div>
+                    </div>
+
+                    ${gameState !== GameState.COMPLETE && html`
+                        <div class="mt-6 flex gap-4">
+                            <button onClick=${() => currentIndex > 0 ? setCurrentIndex(c => c - 1) : null} 
+                                disabled=${currentIndex === 0 && gameState === GameState.READ}
+                                class="w-16 bg-white rounded-2xl shadow-sm font-bold text-slate-400 border-2 border-slate-100 disabled:opacity-20 active-scale text-2xl flex items-center justify-center">←</button>
+                            <button onClick=${handleNext} 
+                                class="flex-grow bg-indigo-500 text-white rounded-2xl py-5 font-black text-xl shadow-lg border-b-4 border-indigo-700 active-scale active:border-b-0">
+                                ${gameState === GameState.READ ? "Thử dịch câu này" : gameState === GameState.TRANSLATE ? "Xem đáp án" : "Câu tiếp theo →"}
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
+        };
+
+        render(html`<${App} />`, document.getElementById('root'));
+    </script>
+</body>
+</html>
